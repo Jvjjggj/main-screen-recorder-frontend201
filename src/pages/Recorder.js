@@ -58,7 +58,7 @@ function Recorder() {
       }, 1000);
       setIntervalId(id);
     } catch (err) {
-      console.error("❌ Error accessing screen:", err);
+      console.error("Error accessing screen:", err);
       alert("Screen recording not allowed!");
     }
   };
