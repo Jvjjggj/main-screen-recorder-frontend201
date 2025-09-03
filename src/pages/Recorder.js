@@ -1,5 +1,7 @@
 import React, { useState, useRef } from "react";
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 function Recorder() {
   const [recording, setRecording] = useState(null);
   const [mediaRecorder, setMediaRecorder] = useState(null);
@@ -7,9 +9,6 @@ function Recorder() {
   const [intervalId, setIntervalId] = useState(null);
   const videoRef = useRef();
 
-  const API_URL = "https://main-screen-record-backend201-2.onrender.com/api/recordings";
-
-  // --- start recording ---
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -29,15 +28,18 @@ function Recorder() {
         setRecording(blob);
         videoRef.current.src = URL.createObjectURL(blob);
 
-        // upload
+        // upload to backend
         const formData = new FormData();
-        formData.append("video", blob, "recording.webm");
+        formData.append("recording", blob, "recording.webm");
 
-        fetch(API_URL, { method: "POST", body: formData })
+        fetch(`${API_BASE}/api/recordings`, {
+          method: "POST",
+          body: formData,
+        })
           .then((res) => res.json())
           .then((data) => {
             console.log("✅ Upload success:", data);
-            alert("Upload successful! Check Library page.");
+            alert("Upload successful!");
           })
           .catch((err) => {
             console.error("❌ Upload error:", err);
@@ -48,20 +50,19 @@ function Recorder() {
       recorder.start();
       setMediaRecorder(recorder);
 
+      // timer
       let seconds = 0;
       const id = setInterval(() => {
         seconds++;
         setTimer(seconds);
       }, 1000);
       setIntervalId(id);
-
     } catch (err) {
       console.error("❌ Error accessing screen:", err);
       alert("Screen recording not allowed!");
     }
   };
 
-  // --- stop recording ---
   const stopRecording = () => {
     if (mediaRecorder) {
       mediaRecorder.stop();
@@ -73,22 +74,30 @@ function Recorder() {
     }
   };
 
+  const downloadRecording = () => {
+    if (recording) {
+      const url = URL.createObjectURL(recording);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "recording.webm";
+      a.click();
+    }
+  };
+
   return (
-    <div>
+    <div className="recorder-container">
       <h2>🎥 Record Screen</h2>
-      <p>Timer: {timer}s</p>
+      <p>⏱️ Timer: {timer}s</p>
       {!mediaRecorder ? (
         <button onClick={startRecording}>Start Recording</button>
       ) : (
         <button onClick={stopRecording}>Stop Recording</button>
       )}
 
-      <h3 style={{ marginTop: "20px" }}>Preview</h3>
-      <video
-        ref={videoRef}
-        controls
-        style={{ width: "80%", maxWidth: "800px", marginTop: "10px" }}
-      ></video>
+      <h3>Preview</h3>
+      <video ref={videoRef} controls className="video-preview"></video>
+      <br />
+      {recording && <button onClick={downloadRecording}>Download</button>}
     </div>
   );
 }

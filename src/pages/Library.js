@@ -1,44 +1,35 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+
+const API_BASE = process.env.REACT_APP_API_URL;
 
 function Library() {
-  const [savedRecordings, setSavedRecordings] = useState([]);
-  const API_URL = "https://main-screen-record-backend201-2.onrender.com/api/recordings";
+  const [recordings, setRecordings] = useState([]);
 
   useEffect(() => {
-    fetch(API_URL)
+    fetch(`${API_BASE}/api/recordings`)
       .then((res) => res.json())
-      .then((data) => setSavedRecordings(data))
-      .catch((err) => console.error("❌ Failed to fetch recordings:", err));
+      .then((data) => setRecordings(data))
+      .catch((err) => console.error("❌ Error fetching recordings:", err));
   }, []);
 
   return (
-    <div>
+    <div className="library-container">
       <h2>📂 Saved Recordings</h2>
-      {savedRecordings.length === 0 ? (
-        <p>No recordings found.</p>
+      {recordings.length === 0 ? (
+        <p>No recordings yet</p>
       ) : (
-        <div>
-          {savedRecordings.map((rec) => (
-            <div key={rec.id} style={{ marginBottom: "20px" }}>
-              <p>
-                <b>{rec.filename}</b> ({Math.round(rec.filesize / 1024)} KB) <br />
-                Saved at: {new Date(rec.createdAt).toLocaleString()}
-              </p>
+        <ul>
+          {recordings.map((rec) => (
+            <li key={rec.id}>
               <video
-                src={`https://main-screen-record-backend201-2.onrender.com/api/recordings/${rec.id}`}
+                src={`${API_BASE}/api/recordings/${rec.filename}`}
                 controls
-                style={{ width: "60%", maxWidth: "600px" }}
+                width="400"
               />
-              <br />
-              <a
-                href={`https://main-screen-record-backend201-2.onrender.com/api/recordings/${rec.id}`}
-                download={rec.filename}
-              >
-                ⬇️ Download
-              </a>
-            </div>
+              <p>{rec.filename}</p>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
