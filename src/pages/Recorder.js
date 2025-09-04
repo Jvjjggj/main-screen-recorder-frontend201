@@ -28,7 +28,7 @@ function Recorder() {
         setRecording(blob);
         videoRef.current.src = URL.createObjectURL(blob);
 
-        // upload to backend
+        // Upload to backend
         const formData = new FormData();
         formData.append("recording", blob, "recording.webm");
 
@@ -50,7 +50,7 @@ function Recorder() {
       recorder.start();
       setMediaRecorder(recorder);
 
-      // timer
+      // Timer
       let seconds = 0;
       const id = setInterval(() => {
         seconds++;

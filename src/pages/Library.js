@@ -22,7 +22,7 @@ function Library() {
           {recordings.map((rec) => (
             <li key={rec.id}>
               <video
-                src={`${API_BASE}/api/recordings/${rec.filename}`}
+                src={`${API_BASE}/api/recordings/${rec.id}`}
                 controls
                 width="400"
               />
