@@ -10,6 +10,7 @@ function App() {
     <Router>
       <div className="app-container">
         <h1>MERN Screen Recorder</h1>
+
         <nav className="navbar">
           <Link to="/" className="nav-link">
             <FaVideo /> Record
