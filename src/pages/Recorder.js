@@ -11,12 +11,25 @@ function Recorder() {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
+      // Capture screen
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
+        audio: true, // for system/tab audio (desktop only)
+      });
+
+      // Capture microphone
+      const micStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
 
-      const recorder = new MediaRecorder(stream);
+      // Merge audio + video tracks
+      const combinedStream = new MediaStream([
+        ...screenStream.getVideoTracks(),
+        ...screenStream.getAudioTracks(),
+        ...micStream.getAudioTracks(),
+      ]);
+
+      const recorder = new MediaRecorder(combinedStream);
       const chunks = [];
 
       recorder.ondataavailable = (e) => {
@@ -37,29 +50,20 @@ function Recorder() {
           body: formData,
         })
           .then((res) => res.json())
-          .then((data) => {
-            console.log("✅ Upload success:", data);
-            alert("Upload successful!");
-          })
-          .catch((err) => {
-            console.error("❌ Upload error:", err);
-            alert("Upload failed");
-          });
+          .then(() => alert("✅ Upload successful!"))
+          .catch(() => alert("❌ Upload failed"));
       };
 
       recorder.start();
       setMediaRecorder(recorder);
 
-      // Timer
+      // Timer setup
       let seconds = 0;
-      const id = setInterval(() => {
-        seconds++;
-        setTimer(seconds);
-      }, 1000);
+      const id = setInterval(() => setTimer(++seconds), 1000);
       setIntervalId(id);
     } catch (err) {
-      console.error("Error accessing screen:", err);
-      alert("Screen recording not allowed!");
+      console.error("Error accessing screen or mic:", err);
+      alert("Please allow both screen and microphone permissions!");
     }
   };
 
@@ -88,6 +92,7 @@ function Recorder() {
     <div className="recorder-container">
       <h2>🎥 Record Screen</h2>
       <p>⏱️ Timer: {timer}s</p>
+
       {!mediaRecorder ? (
         <button onClick={startRecording}>Start Recording</button>
       ) : (
